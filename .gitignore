@@ -1,0 +1,8 @@
+.idea/
+*.iml
+.DS_Store
+/backend/target/
+/backend/mvnw
+/backend/mvnw.cmd
+/frontend/node_modules/
+/frontend/.angular/

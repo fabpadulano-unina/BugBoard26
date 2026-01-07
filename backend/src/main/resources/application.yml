@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: bugboard-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bugboard_db
+    username: admin
+    password: password123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Crea/aggiorna le tabelle automaticamente all'avvio
+    show-sql: true # Utile per vedere le query in console mentre sviluppi
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
