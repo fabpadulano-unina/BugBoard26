@@ -18,7 +18,6 @@ export class IssueService {
   }
 
   updateState(id: number, state: string) {
-    // Passiamo lo stato come query param: /api/issues/123/state?state=DONE
     return this.api.put<Issue>(`${this.endpoint}/${id}/state`, {}, { params: { state } });
   }
 }

@@ -1,6 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { UserSummary } from '../models/user.model';
+import { UserCreateRequest, UserSummary } from '../models/user.model';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -10,5 +12,9 @@ export class UserService {
 
   getAll() {
     return this.api.get<UserSummary[]>('users');
+  }
+
+  create(user: UserCreateRequest) {
+    return this.api.post<UserSummary>('users', user);
   }
 }

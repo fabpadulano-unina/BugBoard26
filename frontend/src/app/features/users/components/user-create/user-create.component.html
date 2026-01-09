@@ -1,0 +1,53 @@
+<div class="flex justify-content-center">
+  <div class="w-full md:w-6 lg:w-4">
+    
+    <p-card header="Nuovo Utente" subheader="Crea una nuova utenza di accesso" styleClass="shadow-2">
+      
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+        
+        <div class="flex flex-column gap-2">
+          <label for="name" class="font-bold">Nome Completo</label>
+          <input pInputText id="name" formControlName="name" placeholder="Es. Mario Rossi" />
+        </div>
+
+        <div class="flex flex-column gap-2">
+          <label for="email" class="font-bold">Email</label>
+          <input pInputText id="email" formControlName="email" placeholder="nome@bugboard.com" />
+        </div>
+
+        <div class="flex flex-column gap-2">
+          <label for="password" class="font-bold">Password</label>
+          <p-password 
+            id="password" 
+            formControlName="password" 
+            [toggleMask]="true" 
+            [feedback]="true"
+            styleClass="w-full" 
+            inputStyleClass="w-full">
+          </p-password>
+        </div>
+
+        <div class="flex flex-column gap-2">
+          <label for="role" class="font-bold">Ruolo</label>
+          <p-dropdown 
+            id="role" 
+            [options]="roles" 
+            formControlName="role" 
+            styleClass="w-full">
+          </p-dropdown>
+        </div>
+
+        @if (errorMessage()) {
+            <p-message severity="error" [text]="errorMessage() || ''" styleClass="w-full"></p-message>
+        }
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Annulla" styleClass="p-button-text p-button-secondary" routerLink="/dashboard"></p-button>
+            <p-button label="Crea Utente" type="submit" [loading]="isLoading()" [disabled]="form.invalid"></p-button>
+        </div>
+
+      </form>
+    </p-card>
+
+  </div>
+</div>

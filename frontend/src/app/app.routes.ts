@@ -6,7 +6,7 @@ import { inject } from '@angular/core';
 import { AuthService } from './auth/services/auth.service';
 import { Router } from '@angular/router';
 import { LoginComponent } from './auth/components/login/login.component';
-
+import { UserCreateComponent } from './features/users/components/user-create/user-create.component';
 const authGuard = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -23,7 +23,8 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: IssueListComponent },
-      { path: 'issues/new', component: IssueCreateComponent } 
+      { path: 'issues/new', component: IssueCreateComponent } ,
+      { path: 'users/new', component: UserCreateComponent },
     ]
   },
   { path: '**', redirectTo: 'dashboard' }
