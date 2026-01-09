@@ -13,8 +13,18 @@ export class IssueService {
     return this.api.get<Issue[]>(this.endpoint);
   }
 
-  create(issue: IssueRequest) {
-    return this.api.post<Issue>(this.endpoint, issue);
+  create(issue: IssueRequest, file?: File) {
+    const formData = new FormData();
+    
+    formData.append('request', new Blob([JSON.stringify(issue)], {
+      type: 'application/json'
+    }));
+
+    if (file) {
+      formData.append('file', file);
+    }
+
+    return this.api.post<Issue>(this.endpoint, formData);
   }
 
   updateState(id: number, state: string) {

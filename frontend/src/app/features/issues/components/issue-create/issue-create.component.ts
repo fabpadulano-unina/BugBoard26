@@ -15,6 +15,8 @@ import { MessageModule } from 'primeng/message';
 import { UserService } from '../../../../core/services/user.service'; 
 import { UserSummary } from '../../../../core/models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FileSelectEvent } from 'primeng/fileupload'; 
+import { FileUploadModule } from 'primeng/fileupload'; 
 
 @Component({
   selector: 'app-issue-create',
@@ -29,7 +31,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
     DropdownModule,
     CalendarModule,
     ButtonModule,
-    MessageModule
+    MessageModule,
+    FileUploadModule
   ],
   templateUrl: './issue-create.component.html'
 })
@@ -53,8 +56,14 @@ private fb = inject(FormBuilder);
     type: [IssueType.BUG, [Validators.required]],
     priority: [Priority.MEDIUM],
     deadline: [null as Date | null],
-    assigneeId: [null as number | null] // Nuovo campo nel form
+    assigneeId: [null as number | null] 
   });
+
+  selectedFile: File | undefined; 
+
+  onFileSelect(event: FileSelectEvent) {
+    this.selectedFile = event.files[0];
+  }
 
   onSubmit() {
     if (this.form.invalid) return;
@@ -67,13 +76,10 @@ private fb = inject(FormBuilder);
     const payload: IssueRequest = {
       ...rawValue,
       deadline: rawValue.deadline ? rawValue.deadline.toISOString().split('T')[0] : undefined,
-      /**Spiegazione della sintassi ??
-L'operatore ?? (Nullish Coalescing) dice: "Se il valore a sinistra è null o undefined, usa quello a destra. Altrimenti usa quello a sinistra". In questo modo trasformiamo il null del form nel undefined che vuole l'interfaccia. */
-      // Se rawValue.assigneeId è null (o undefined), diventa undefined. Altrimenti resta il numero.
       assigneeId: rawValue.assigneeId ?? undefined 
     };
 
-    this.issueService.create(payload).subscribe({
+    this.issueService.create(payload, this.selectedFile).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
@@ -81,7 +87,7 @@ L'operatore ?? (Nullish Coalescing) dice: "Se il valore a sinistra è null o und
       error: (err) => {
         console.error(err);
         this.isLoading.set(false);
-        this.errorMessage.set('Errore durante la creazione della issue.');
+        this.errorMessage.set('Errore creazione issue.');
       }
     });
   }

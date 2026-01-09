@@ -23,6 +23,19 @@
           }
         </div>
 
+        <div class="flex flex-column gap-2">
+            <label class="font-bold">Allegato (Immagine)</label>
+            <p-fileUpload 
+                mode="basic" 
+                chooseLabel="Scegli Immagine" 
+                chooseIcon="pi pi-upload"
+                accept="image/*" 
+                maxFileSize="1000000" 
+                (onSelect)="onFileSelect($event)"
+                styleClass="w-full">
+            </p-fileUpload>
+        </div>
+
         <div class="formgrid grid">
             
             <div class="field col-12 md:col-6">
