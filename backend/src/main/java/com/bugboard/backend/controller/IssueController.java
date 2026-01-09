@@ -6,8 +6,10 @@ import com.bugboard.backend.model.IssueState;
 import com.bugboard.backend.service.IssueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,9 +20,12 @@ public class IssueController {
 
     private final IssueService issueService;
 
-    @PostMapping
-    public ResponseEntity<IssueResponse> create(@RequestBody @Valid IssueRequest request) {
-        return ResponseEntity.ok(issueService.createIssue(request));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<IssueResponse> create(
+            @RequestPart("request") @Valid IssueRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        return ResponseEntity.ok(issueService.createIssue(request, file));
     }
 
     @PutMapping("/{id}/state")

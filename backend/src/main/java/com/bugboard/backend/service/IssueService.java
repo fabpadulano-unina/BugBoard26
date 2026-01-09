@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.web.multipart.MultipartFile; // Importante
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class IssueService {
@@ -44,6 +47,48 @@ public class IssueService {
                 .state(IssueState.TODO)
                 .reporter(reporter)
                 .assignee(assignee)
+                .build();
+
+        Issue savedIssue = issueRepository.save(issue);
+
+        return mapToResponse(savedIssue);
+    }
+
+    @Transactional
+    public IssueResponse createIssue(IssueRequest request, MultipartFile file) { // Aggiunto parametro file
+        User reporter = currentUserService.getCurrentUser();
+
+        User assignee = null;
+        if (request.getAssigneeId() != null) {
+            assignee = userRepository.findById(request.getAssigneeId())
+                    .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
+        }
+
+        // Gestione Immagine
+        byte[] attachmentBytes = null;
+        String attachmentName = null;
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                attachmentBytes = file.getBytes();
+                attachmentName = file.getOriginalFilename();
+            } catch (IOException e) {
+                throw new RuntimeException("Errore nella lettura del file allegato", e);
+            }
+        }
+
+        Issue issue = Issue.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .type(request.getType())
+                .priority(request.getPriority())
+                .deadline(request.getDeadline())
+                .state(IssueState.TODO)
+                .reporter(reporter)
+                .assignee(assignee)
+                // Salviamo l'immagine
+                .attachment(attachmentBytes)
+                .attachmentName(attachmentName)
                 .build();
 
         Issue savedIssue = issueRepository.save(issue);

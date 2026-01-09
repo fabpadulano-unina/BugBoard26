@@ -1,17 +1,11 @@
 package com.bugboard.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "issues")
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,14 +16,13 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 5000)
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private IssueState state = IssueState.TODO;
+    private IssueState state;
 
     @Enumerated(EnumType.STRING)
     private IssueType type;
@@ -37,19 +30,26 @@ public class Issue {
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
-    private String imageUrl;
-
     private LocalDate deadline;
+
+    @Lob // Indica che è un oggetto grande (Large Object)
+    private byte[] attachment;
+
+    private String attachmentName;
+    // --------------------------------
+
+    @ManyToOne
+    @JoinColumn(name = "reporter_id")
+    private User reporter;
 
     @ManyToOne
     @JoinColumn(name = "assignee_id")
     private User assignee;
 
-    @ManyToOne
-    @JoinColumn(name = "reporter_id", nullable = false)
-    private User reporter;
-
-    @CreationTimestamp
-    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
