@@ -4,37 +4,37 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root' 
+  providedIn: 'root'
 })
 export class ApiService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl;
 
   /**
-   * Wrapper generico per le chiamate GET
-   * @param path L'endpoint relativo (es. 'auth/login')
-   * @param params Parametri opzionali query string
+   * Wrapper generico per GET
    */
   get<T>(path: string, params?: HttpParams | { [param: string]: string | number | boolean }): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}/${path}`, { params });
   }
 
   /**
-   * Wrapper generico per le chiamate POST
+   * Wrapper generico per POST
+   * Aggiornato per accettare opzioni extra (es. params)
    */
-  post<T>(path: string, body: any): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}/${path}`, body);
+  post<T>(path: string, body: any, options: { params?: any } = {}): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}/${path}`, body, options);
   }
 
   /**
-   * Wrapper generico per le chiamate PUT
+   * Wrapper generico per PUT
+   * Aggiornato per accettare opzioni extra (es. params)
    */
-  put<T>(path: string, body: any): Observable<T> {
-    return this.http.put<T>(`${this.baseUrl}/${path}`, body);
+  put<T>(path: string, body: any, options: { params?: any } = {}): Observable<T> {
+    return this.http.put<T>(`${this.baseUrl}/${path}`, body, options);
   }
 
   /**
-   * Wrapper generico per le chiamate DELETE
+   * Wrapper generico per DELETE
    */
   delete<T>(path: string): Observable<T> {
     return this.http.delete<T>(`${this.baseUrl}/${path}`);

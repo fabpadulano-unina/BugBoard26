@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+
 <div class="card">
   <div class="flex justify-content-between align-items-center mb-4">
     <h2 class="m-0 text-900">Dashboard Issue</h2>
@@ -8,15 +10,16 @@
     <ng-template pTemplate="header">
       <tr>
         <th style="width:5%">ID</th>
-        <th style="width:25%">Titolo</th>
+        <th style="width:20%">Titolo</th>
         <th style="width:10%">Tipo</th>
         <th style="width:10%">Priorità</th>
-        <th style="width:10%">Stato</th>
+        <th style="width:15%">Stato</th>
         <th style="width:15%">Assegnatario</th>
         <th style="width:15%">Reporter</th>
-        <th style="width:10%">Azioni</th>
+        <th style="width:10%">Data</th>
       </tr>
     </ng-template>
+    
     <ng-template pTemplate="body" let-issue>
       <tr>
         <td>#{{ issue.id }}</td>
@@ -26,13 +29,32 @@
         <td>
             @if(issue.priority) {
                 <p-tag [value]="issue.priority" [severity]="getPrioritySeverity(issue.priority)"></p-tag>
-            } @else {
-                -
-            }
+            } @else { - }
         </td>
 
         <td>
-          <p-tag [value]="issue.state" [severity]="getSeverity(issue.state)"></p-tag>
+            <p-dropdown 
+                [options]="stateOptions" 
+                [(ngModel)]="issue.state" 
+                (onChange)="onStateChange(issue, $event.value)"
+                [disabled]="!canEdit(issue)" 
+                appendTo="body"
+                [style]="{'width':'100%'}"
+                placeholder="Seleziona">
+                
+                <ng-template pTemplate="selectedItem" let-selectedOption>
+                    <p-tag [value]="selectedOption.label" [severity]="getSeverity(selectedOption.label)"></p-tag>
+                </ng-template>
+                
+                <ng-template let-option pTemplate="item">
+                    <p-tag [value]="option.label" [severity]="getSeverity(option.label)"></p-tag>
+                </ng-template>
+
+            </p-dropdown>
+            
+            @if(!canEdit(issue)) {
+                <i class="pi pi-lock text-xs text-400 ml-1" pTooltip="Solo l'assegnatario può modificare"></i>
+            }
         </td>
 
         <td>
@@ -40,17 +62,12 @@
             {{ issue.assigneeName || 'Non assegnato' }}
         </td>
         <td>{{ issue.reporterName }}</td>
-
-        <td>
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary" pTooltip="Modifica"></p-button>
-        </td>
+        <td>{{ issue.createdAt | date:'shortDate' }}</td>
       </tr>
     </ng-template>
     
     <ng-template pTemplate="emptymessage">
-        <tr>
-            <td colspan="8" class="text-center p-4">Nessuna issue trovata. Creane una nuova!</td>
-        </tr>
+        <tr><td colspan="8" class="text-center p-4">Nessuna issue trovata.</td></tr>
     </ng-template>
   </p-table>
 </div>
