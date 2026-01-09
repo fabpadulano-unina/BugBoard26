@@ -1,5 +1,5 @@
 services:
-  # Servizio Database PostgreSQL
+  # 1. Database PostgreSQL
   postgres:
     image: postgres:16
     container_name: bugboard-db
@@ -12,17 +12,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Servizio Frontend (Angular) 
+  # 2. Frontend Angular (sviluppo)
   frontend:
     image: node:20-alpine
     container_name: bugboard-frontend
     working_dir: /app
     volumes:
       - ./frontend:/app
-      - /app/node_modules 
+# Aggiungi l'installazione globale di @angular/cli prima di avviare
+    command: sh -c "npm install -g @angular/cli@18 && npm install && ng serve --host 0.0.0.0 --poll 2000 --disable-host-check"
     ports:
       - "4200:4200"
-    command: npm start -- --host 0.0.0.0 --poll 2000 #  necessario per hot-reload su Windows/Docker
     depends_on:
       - postgres
 
