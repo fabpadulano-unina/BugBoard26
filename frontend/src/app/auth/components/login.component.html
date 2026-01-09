@@ -1,0 +1,36 @@
+<div class="flex align-items-center justify-content-center min-h-screen bg-blue-50">
+  <div class="w-full md:w-5 lg:w-3">
+    
+    <p-card header="BugBoard26" subheader="Login" styleClass="shadow-4 text-center">
+      
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-3 mt-3">
+        
+        <div class="flex flex-column gap-2 text-left">
+          <label htmlFor="email" class="font-bold">Email</label>
+          <input pInputText id="email" formControlName="email" class="w-full" 
+                 [ngClass]="{'ng-invalid ng-dirty': loginForm.get('email')?.touched && loginForm.get('email')?.invalid}" />
+        </div>
+
+        <div class="flex flex-column gap-2 text-left">
+          <label htmlFor="password" class="font-bold">Password</label>
+          <p-password id="password" formControlName="password" [feedback]="false" [toggleMask]="true" 
+                      styleClass="w-full" inputStyleClass="w-full"></p-password>
+        </div>
+
+        @if (errorMessage()) {
+            <small class="text-red-500 font-bold">{{ errorMessage() }}</small>
+        }
+
+        <p-button label="Accedi" type="submit" [loading]="isLoading()" 
+                  [disabled]="loginForm.invalid" styleClass="w-full"></p-button>
+                  
+      </form>
+
+      <ng-template pTemplate="footer">
+        <div class="text-500 text-sm mt-3">Admin: admin&#64;bugboard.com <br> Psw: password123</div>
+      </ng-template>
+      
+    </p-card>
+
+  </div>
+</div>
