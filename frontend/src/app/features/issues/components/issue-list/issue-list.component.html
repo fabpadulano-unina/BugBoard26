@@ -1,0 +1,56 @@
+<div class="card">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-900">Dashboard Issue</h2>
+    <p-button label="Nuova Issue" icon="pi pi-plus" [routerLink]="['/issues/new']"></p-button>
+  </div>
+
+  <p-table [value]="issues()" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm shadow-2">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width:5%">ID</th>
+        <th style="width:25%">Titolo</th>
+        <th style="width:10%">Tipo</th>
+        <th style="width:10%">Priorità</th>
+        <th style="width:10%">Stato</th>
+        <th style="width:15%">Assegnatario</th>
+        <th style="width:15%">Reporter</th>
+        <th style="width:10%">Azioni</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-issue>
+      <tr>
+        <td>#{{ issue.id }}</td>
+        <td class="font-bold">{{ issue.title }}</td>
+        <td>{{ issue.type }}</td>
+        
+        <td>
+            @if(issue.priority) {
+                <p-tag [value]="issue.priority" [severity]="getPrioritySeverity(issue.priority)"></p-tag>
+            } @else {
+                -
+            }
+        </td>
+
+        <td>
+          <p-tag [value]="issue.state" [severity]="getSeverity(issue.state)"></p-tag>
+        </td>
+
+        <td>
+            <i class="pi pi-user mr-2 text-500"></i>
+            {{ issue.assigneeName || 'Non assegnato' }}
+        </td>
+        <td>{{ issue.reporterName }}</td>
+
+        <td>
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary" pTooltip="Modifica"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="8" class="text-center p-4">Nessuna issue trovata. Creane una nuova!</td>
+        </tr>
+    </ng-template>
+  </p-table>
+</div>
