@@ -2,6 +2,7 @@ package com.bugboard.backend.controller;
 
 import com.bugboard.backend.dto.issue.IssueRequest;
 import com.bugboard.backend.dto.issue.IssueResponse;
+import com.bugboard.backend.model.IssueState;
 import com.bugboard.backend.service.IssueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,13 @@ public class IssueController {
     @PostMapping
     public ResponseEntity<IssueResponse> create(@RequestBody @Valid IssueRequest request) {
         return ResponseEntity.ok(issueService.createIssue(request));
+    }
+
+    @PutMapping("/{id}/state")
+    public ResponseEntity<IssueResponse> updateState(
+            @PathVariable Long id,
+            @RequestParam IssueState state) {
+        return ResponseEntity.ok(issueService.updateState(id, state));
     }
 
     @GetMapping

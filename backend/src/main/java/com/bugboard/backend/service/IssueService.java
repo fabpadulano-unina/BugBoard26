@@ -4,11 +4,13 @@ import com.bugboard.backend.dto.issue.IssueRequest;
 import com.bugboard.backend.dto.issue.IssueResponse;
 import com.bugboard.backend.model.Issue;
 import com.bugboard.backend.model.IssueState;
+import com.bugboard.backend.model.Role;
 import com.bugboard.backend.model.User;
 import com.bugboard.backend.repository.IssueRepository;
 import com.bugboard.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +35,6 @@ public class IssueService {
                     .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato con ID: " + request.getAssigneeId()));
         }
 
-        // Creazione Entity (Builder Pattern)
         Issue issue = Issue.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -48,6 +49,25 @@ public class IssueService {
         Issue savedIssue = issueRepository.save(issue);
 
         return mapToResponse(savedIssue);
+    }
+
+    @Transactional
+    public IssueResponse updateState(Long issueId, IssueState newState) {
+        Issue issue = issueRepository.findById(issueId)
+                .orElseThrow(() -> new EntityNotFoundException("Issue non trovata"));
+
+        User currentUser = currentUserService.getCurrentUser();
+
+        boolean isAssignee = issue.getAssignee() != null && issue.getAssignee().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+
+        if (!isAssignee && !isAdmin) {
+            throw new AccessDeniedException("Solo l'assegnatario può modificare lo stato di questa issue.");
+        }
+
+        issue.setState(newState);
+        Issue saved = issueRepository.save(issue);
+        return mapToResponse(saved);
     }
 
     @Transactional(readOnly = true)
