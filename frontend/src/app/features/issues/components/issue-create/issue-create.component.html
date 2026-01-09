@@ -25,18 +25,32 @@
 
         <div class="formgrid grid">
             
-            <div class="field col-12 md:col-4">
+            <div class="field col-12 md:col-6">
                 <label for="type" class="font-bold block mb-2">Tipo</label>
                 <p-dropdown id="type" [options]="types" formControlName="type" styleClass="w-full"></p-dropdown>
             </div>
 
-            <div class="field col-12 md:col-4">
+            <div class="field col-12 md:col-6">
                 <label for="priority" class="font-bold block mb-2">Priorità</label>
                 <p-dropdown id="priority" [options]="priorities" formControlName="priority" styleClass="w-full"></p-dropdown>
             </div>
 
-            <div class="field col-12 md:col-4">
-                <label for="deadline" class="font-bold block mb-2">Scadenza (Opzionale)</label>
+            <div class="field col-12 md:col-6">
+                <label for="assignee" class="font-bold block mb-2">Assegnatario</label>
+                <p-dropdown 
+                    id="assignee" 
+                    [options]="users()" 
+                    formControlName="assigneeId" 
+                    optionLabel="name" 
+                    optionValue="id" 
+                    placeholder="Seleziona un utente"
+                    [showClear]="true"
+                    styleClass="w-full">
+                </p-dropdown>
+            </div>
+
+            <div class="field col-12 md:col-6">
+                <label for="deadline" class="font-bold block mb-2">Scadenza</label>
                 <p-calendar id="deadline" formControlName="deadline" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
             </div>
         </div>
@@ -50,8 +64,7 @@
             <p-button label="Crea Issue" type="submit" [loading]="isLoading()" [disabled]="form.invalid"></p-button>
         </div>
 
-      </form>
-    </p-card>
+      </form> </p-card>
 
   </div>
 </div>

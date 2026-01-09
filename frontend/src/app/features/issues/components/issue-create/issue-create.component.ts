@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IssueService } from '../../services/issue.service';
-import { IssueType, Priority } from '../../../../core/models/issue.model';
+import { IssueRequest, IssueType, Priority } from '../../../../core/models/issue.model';
 
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,6 +12,9 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { UserService } from '../../../../core/services/user.service'; 
+import { UserSummary } from '../../../../core/models/user.model';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-issue-create',
@@ -31,23 +34,26 @@ import { MessageModule } from 'primeng/message';
   templateUrl: './issue-create.component.html'
 })
 export class IssueCreateComponent {
-  private fb = inject(FormBuilder);
+private fb = inject(FormBuilder);
   private issueService = inject(IssueService);
+  private userService = inject(UserService); 
   private router = inject(Router);
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
 
-  // Opzioni per i Dropdown (convertiamo gli Enum in array di oggetti)
+  users = toSignal(this.userService.getAll(), { initialValue: [] });
+
   types = Object.values(IssueType).map(t => ({ label: t, value: t }));
   priorities = Object.values(Priority).map(p => ({ label: p, value: p }));
 
   form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
-    type: [IssueType.BUG, [Validators.required]], // Default a BUG
-    priority: [Priority.MEDIUM], // Default a MEDIUM
-    deadline: [null as Date | null] 
+    type: [IssueType.BUG, [Validators.required]],
+    priority: [Priority.MEDIUM],
+    deadline: [null as Date | null],
+    assigneeId: [null as number | null] // Nuovo campo nel form
   });
 
   onSubmit() {
@@ -57,20 +63,25 @@ export class IssueCreateComponent {
     this.errorMessage.set(null);
 
     const rawValue = this.form.getRawValue();
-    const payload = {
+
+    const payload: IssueRequest = {
       ...rawValue,
-      deadline: rawValue.deadline ? rawValue.deadline.toISOString().split('T')[0] : undefined
+      deadline: rawValue.deadline ? rawValue.deadline.toISOString().split('T')[0] : undefined,
+      /**Spiegazione della sintassi ??
+L'operatore ?? (Nullish Coalescing) dice: "Se il valore a sinistra è null o undefined, usa quello a destra. Altrimenti usa quello a sinistra". In questo modo trasformiamo il null del form nel undefined che vuole l'interfaccia. */
+      // Se rawValue.assigneeId è null (o undefined), diventa undefined. Altrimenti resta il numero.
+      assigneeId: rawValue.assigneeId ?? undefined 
     };
 
     this.issueService.create(payload).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']); 
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         console.error(err);
         this.isLoading.set(false);
-        this.errorMessage.set('Errore durante la creazione della issue. Riprova.');
+        this.errorMessage.set('Errore durante la creazione della issue.');
       }
     });
   }
