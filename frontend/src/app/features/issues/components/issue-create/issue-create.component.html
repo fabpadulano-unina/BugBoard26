@@ -1,0 +1,57 @@
+<div class="flex justify-content-center">
+  <div class="w-full md:w-8 lg:w-6">
+    
+    <p-card header="Nuova Segnalazione" subheader="Compila i dettagli del bug o della feature" styleClass="shadow-2">
+      
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+        
+        <div class="flex flex-column gap-2">
+          <label for="title" class="font-bold">Titolo *</label>
+          <input pInputText id="title" formControlName="title" placeholder="Es. Errore nel login..." 
+                 [ngClass]="{'ng-invalid ng-dirty': form.get('title')?.touched && form.get('title')?.invalid}" />
+          @if (form.get('title')?.touched && form.get('title')?.errors?.['minlength']) {
+            <small class="text-red-500">Il titolo deve essere di almeno 5 caratteri.</small>
+          }
+        </div>
+
+        <div class="flex flex-column gap-2">
+          <label for="description" class="font-bold">Descrizione *</label>
+          <textarea pInputTextarea id="description" formControlName="description" rows="5" 
+                    placeholder="Descrivi dettagliatamente il problema..." class="w-full"></textarea>
+           @if (form.get('description')?.touched && form.get('description')?.errors?.['minlength']) {
+            <small class="text-red-500">La descrizione è troppo breve.</small>
+          }
+        </div>
+
+        <div class="formgrid grid">
+            
+            <div class="field col-12 md:col-4">
+                <label for="type" class="font-bold block mb-2">Tipo</label>
+                <p-dropdown id="type" [options]="types" formControlName="type" styleClass="w-full"></p-dropdown>
+            </div>
+
+            <div class="field col-12 md:col-4">
+                <label for="priority" class="font-bold block mb-2">Priorità</label>
+                <p-dropdown id="priority" [options]="priorities" formControlName="priority" styleClass="w-full"></p-dropdown>
+            </div>
+
+            <div class="field col-12 md:col-4">
+                <label for="deadline" class="font-bold block mb-2">Scadenza (Opzionale)</label>
+                <p-calendar id="deadline" formControlName="deadline" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
+            </div>
+        </div>
+
+        @if (errorMessage()) {
+            <p-message severity="error" [text]="errorMessage() || ''" styleClass="w-full"></p-message>
+        }
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Annulla" styleClass="p-button-text p-button-secondary" routerLink="/dashboard"></p-button>
+            <p-button label="Crea Issue" type="submit" [loading]="isLoading()" [disabled]="form.invalid"></p-button>
+        </div>
+
+      </form>
+    </p-card>
+
+  </div>
+</div>
