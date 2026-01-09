@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
-import { computed, effect } from '@angular/core';
+import { computed } from '@angular/core';
 import { MenubarModule } from 'primeng/menubar';
 import { ButtonModule } from 'primeng/button';
 import { MenuItem } from 'primeng/api';
@@ -36,8 +36,7 @@ export class MainLayoutComponent {
        { label: 'Nuova Issue', icon: 'pi pi-plus', routerLink: '/issues/new' }
     ];
 
-    // LOGICA PUNTO 1: Mostra solo se ADMIN
-    if (user?.role === 'ADMIN') { // Assicurati che il DTO UserSummary abbia il campo 'role'
+    if (user?.role === 'ADMIN') { 
        menu.push({ 
          label: 'Crea Utente', 
          icon: 'pi pi-user-plus', 
