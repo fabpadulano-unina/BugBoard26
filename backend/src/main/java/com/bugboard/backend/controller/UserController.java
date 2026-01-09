@@ -1,12 +1,17 @@
 package com.bugboard.backend.controller;
 
+import com.bugboard.backend.dto.user.UserCreateRequest;
 import com.bugboard.backend.dto.user.UserSummary;
+import com.bugboard.backend.model.Role;
+import com.bugboard.backend.model.User;
 import com.bugboard.backend.repository.UserRepository;
+import com.bugboard.backend.service.CurrentUserService;
+import com.bugboard.backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final UserService userService;
+    private final CurrentUserService currentUserService;
 
     @GetMapping
     public ResponseEntity<List<UserSummary>> getAllUsers() {
@@ -27,7 +34,16 @@ public class UserController {
                         .email(user.getEmail())
                         .build())
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(users);
+    }
+
+    @PostMapping
+    public ResponseEntity<UserSummary> createUser(@RequestBody @Valid UserCreateRequest request) {
+        User currentUser = currentUserService.getCurrentUser();
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Solo gli amministratori possono creare nuovi utenti.");
+        }
+
+        return ResponseEntity.ok(userService.createUser(request));
     }
 }
