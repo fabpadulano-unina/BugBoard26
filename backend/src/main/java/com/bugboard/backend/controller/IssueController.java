@@ -39,4 +39,12 @@ public class IssueController {
     public ResponseEntity<List<IssueResponse>> getAll() {
         return ResponseEntity.ok(issueService.getAllIssues());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<IssueResponse> updateIssue(
+            @PathVariable Long id,
+            @RequestBody @Valid IssueRequest request
+    ) {
+        return ResponseEntity.ok(issueService.updateIssueDetails(id, request));
+    }
 }

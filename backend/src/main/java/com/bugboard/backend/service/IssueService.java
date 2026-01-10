@@ -122,6 +122,41 @@ public class IssueService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public IssueResponse updateIssueDetails(Long id, IssueRequest request) {
+        Issue issue = issueRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Issue non trovata"));
+
+        User currentUser = currentUserService.getCurrentUser();
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isAssignee = issue.getAssignee() != null && issue.getAssignee().getId().equals(currentUser.getId());
+
+        // PUNTO 9: Controllo accesso generico
+        if (!isAdmin && !isAssignee) {
+            throw new AccessDeniedException("Non hai i permessi per modificare questa issue.");
+        }
+
+        issue.setTitle(request.getTitle());
+        issue.setDescription(request.getDescription());
+        issue.setType(request.getType());
+        issue.setPriority(request.getPriority());
+
+        // PUNTO 4 e 18: Solo ADMIN può cambiare Assegnatario e Scadenza
+        if (isAdmin) {
+            issue.setDeadline(request.getDeadline());
+
+            if (request.getAssigneeId() != null) {
+                User assignee = userRepository.findById(request.getAssigneeId())
+                        .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
+                issue.setAssignee(assignee);
+            } else {
+                issue.setAssignee(null); // Rimuovi assegnazione
+            }
+        }
+
+        return mapToResponse(issueRepository.save(issue));
+    }
+
     private IssueResponse mapToResponse(Issue issue) {
         return IssueResponse.builder()
                 .id(issue.getId())
