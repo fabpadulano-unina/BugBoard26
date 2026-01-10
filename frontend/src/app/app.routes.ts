@@ -7,6 +7,7 @@ import { AuthService } from './auth/services/auth.service';
 import { Router } from '@angular/router';
 import { LoginComponent } from './auth/components/login/login.component';
 import { UserCreateComponent } from './features/users/components/user-create/user-create.component';
+import { IssueEditComponent } from './features/issues/components/issue-edit/issue-edit.component';
 const authGuard = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -25,6 +26,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: IssueListComponent },
       { path: 'issues/new', component: IssueCreateComponent } ,
       { path: 'users/new', component: UserCreateComponent },
+      { path: 'issues/edit/:id', component: IssueEditComponent } 
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

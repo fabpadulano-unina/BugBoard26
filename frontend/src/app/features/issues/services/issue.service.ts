@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { Issue, IssueRequest } from '../../../core/models/issue.model';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -29,5 +30,13 @@ export class IssueService {
 
   updateState(id: number, state: string) {
     return this.api.put<Issue>(`${this.endpoint}/${id}/state`, {}, { params: { state } });
+  }
+
+  getById(id: number): Observable<Issue> {
+    return this.api.get<Issue>(`${this.endpoint}/${id}`);
+  }
+
+  update(id: number, issue: IssueRequest) {
+    return this.api.put<Issue>(`${this.endpoint}/${id}`, issue);
   }
 }

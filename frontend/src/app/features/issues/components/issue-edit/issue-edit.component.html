@@ -1,0 +1,43 @@
+<div class="flex justify-content-center">
+  <div class="w-full md:w-8 lg:w-6">
+    <p-card header="Modifica Issue" styleClass="shadow-2">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+        
+        <div class="flex flex-column gap-2">
+          <label class="font-bold">Titolo</label>
+          <input pInputText formControlName="title" />
+        </div>
+
+        <div class="flex flex-column gap-2">
+            <label class="font-bold">Descrizione</label>
+            <textarea pInputTextarea formControlName="description" rows="5"></textarea>
+        </div>
+
+        <div class="formgrid grid">
+            <div class="field col-6">
+                <label class="font-bold block mb-2">Tipo</label>
+                <p-dropdown [options]="types" formControlName="type" styleClass="w-full"></p-dropdown>
+            </div>
+            <div class="field col-6">
+                <label class="font-bold block mb-2">Priorità</label>
+                <p-dropdown [options]="priorities" formControlName="priority" styleClass="w-full"></p-dropdown>
+            </div>
+            
+            <div class="field col-6">
+                <label class="font-bold block mb-2">Assegnatario</label>
+                <p-dropdown [options]="users()" formControlName="assigneeId" optionLabel="name" optionValue="id" [showClear]="true" styleClass="w-full" placeholder="Nessuno"></p-dropdown>
+            </div>
+            <div class="field col-6">
+                <label class="font-bold block mb-2">Scadenza</label>
+                <p-calendar formControlName="deadline" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
+            </div>
+        </div>
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button label="Annulla" styleClass="p-button-text p-button-secondary" routerLink="/dashboard"></p-button>
+            <p-button label="Salva Modifiche" type="submit" [loading]="isLoading()" [disabled]="form.invalid"></p-button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

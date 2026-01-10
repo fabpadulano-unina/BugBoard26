@@ -29,33 +29,7 @@ public class IssueService {
     private final CurrentUserService currentUserService;
 
     @Transactional
-    public IssueResponse createIssue(IssueRequest request) {
-        User reporter = currentUserService.getCurrentUser();
-
-        User assignee = null;
-        if (request.getAssigneeId() != null) {
-            assignee = userRepository.findById(request.getAssigneeId())
-                    .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato con ID: " + request.getAssigneeId()));
-        }
-
-        Issue issue = Issue.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .type(request.getType())
-                .priority(request.getPriority())
-                .deadline(request.getDeadline())
-                .state(IssueState.TODO)
-                .reporter(reporter)
-                .assignee(assignee)
-                .build();
-
-        Issue savedIssue = issueRepository.save(issue);
-
-        return mapToResponse(savedIssue);
-    }
-
-    @Transactional
-    public IssueResponse createIssue(IssueRequest request, MultipartFile file) { // Aggiunto parametro file
+    public IssueResponse createIssue(IssueRequest request, MultipartFile file) {
         User reporter = currentUserService.getCurrentUser();
 
         User assignee = null;
@@ -86,7 +60,6 @@ public class IssueService {
                 .state(IssueState.TODO)
                 .reporter(reporter)
                 .assignee(assignee)
-                // Salviamo l'immagine
                 .attachment(attachmentBytes)
                 .attachmentName(attachmentName)
                 .build();
@@ -119,7 +92,7 @@ public class IssueService {
     public List<IssueResponse> getAllIssues() {
         return issueRepository.findAll().stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -155,6 +128,13 @@ public class IssueService {
         }
 
         return mapToResponse(issueRepository.save(issue));
+    }
+
+    @Transactional(readOnly = true)
+    public IssueResponse getIssueById(Long id) {
+        Issue issue = issueRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Issue non trovata con ID: " + id));
+        return mapToResponse(issue);
     }
 
     private IssueResponse mapToResponse(Issue issue) {
