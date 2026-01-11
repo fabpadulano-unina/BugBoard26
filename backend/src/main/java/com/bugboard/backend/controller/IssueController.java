@@ -40,16 +40,26 @@ public class IssueController {
         return ResponseEntity.ok(issueService.getAllIssues());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<IssueResponse> updateIssue(
             @PathVariable Long id,
-            @RequestBody @Valid IssueRequest request
+            @RequestPart("request") @Valid IssueRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        return ResponseEntity.ok(issueService.updateIssueDetails(id, request));
+        return ResponseEntity.ok(issueService.updateIssueDetails(id, request, file));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<IssueResponse> getIssue(@PathVariable Long id) {
         return ResponseEntity.ok(issueService.getIssueById(id));
+    }
+
+    @GetMapping(value = "/{id}/attachment", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    public ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
+        byte[] data = issueService.getAttachment(id);
+        if (data == null || data.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(data);
     }
 }
