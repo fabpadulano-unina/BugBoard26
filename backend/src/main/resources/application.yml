@@ -2,7 +2,8 @@ spring:
   application:
     name: bugboard-backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/bugboard_db
+    # Se la variabile DB_HOST esiste usa quella, altrimenti usa localhost
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/bugboard_db
     username: admin
     password: password123
     driver-class-name: org.postgresql.Driver

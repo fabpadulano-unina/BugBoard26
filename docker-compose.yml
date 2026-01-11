@@ -36,6 +36,15 @@ services:
       - "4200:4200"
     depends_on:
       - postgres
-
+  #backend:
+    #image: bugboard-backend:latest # (o build context)
+   # container_name: bugboard-backend
+   # environment:
+      # Qui "inietti" il valore. "bugboard-db" è il nome del container del database
+   #   - DB_HOST=bugboard-db 
+   #   - POSTGRES_USER=admin
+  #    - POSTGRES_PASSWORD=password123
+  #  depends_on:
+   #   - postgres
 volumes:
   postgres_data:
