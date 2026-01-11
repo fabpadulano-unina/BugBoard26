@@ -6,6 +6,7 @@ import com.bugboard.backend.model.Issue;
 import com.bugboard.backend.model.IssueState;
 import com.bugboard.backend.model.Role;
 import com.bugboard.backend.model.User;
+import com.bugboard.backend.notification.NotificationService; // IMPORTANTE
 import com.bugboard.backend.repository.IssueRepository;
 import com.bugboard.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,7 +15,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class IssueService {
     private final IssueRepository issueRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
+    private final NotificationService notificationService; // INIEZIONE DEL NOTIFICATORE
 
     @Transactional
     public IssueResponse createIssue(IssueRequest request, MultipartFile file) {
@@ -59,7 +60,16 @@ public class IssueService {
                 .attachmentName(attachmentName)
                 .build();
 
-        return mapToResponse(issueRepository.save(issue));
+        Issue savedIssue = issueRepository.save(issue);
+
+        // --- PUNTO 4: NOTIFICA ASSEGNAZIONE ---
+        if (assignee != null && !assignee.getId().equals(reporter.getId())) {
+            notificationService.notifyUser(assignee,
+                    "Nuova Assegnazione",
+                    "Sei stato assegnato al ticket #" + savedIssue.getId() + ": " + savedIssue.getTitle());
+        }
+
+        return mapToResponse(savedIssue);
     }
 
     @Transactional
@@ -75,6 +85,9 @@ public class IssueService {
             throw new AccessDeniedException("Non hai i permessi per modificare questa issue.");
         }
 
+        Long oldAssigneeId = issue.getAssignee() != null ? issue.getAssignee().getId() : null;
+        Long newAssigneeId = request.getAssigneeId();
+
         issue.setTitle(request.getTitle());
         issue.setDescription(request.getDescription());
         issue.setType(request.getType());
@@ -82,10 +95,18 @@ public class IssueService {
 
         if (isAdmin) {
             issue.setDeadline(request.getDeadline());
-            if (request.getAssigneeId() != null) {
-                User assignee = userRepository.findById(request.getAssigneeId())
+
+            if (newAssigneeId != null) {
+                User newAssignee = userRepository.findById(newAssigneeId)
                         .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
-                issue.setAssignee(assignee);
+                issue.setAssignee(newAssignee);
+
+                // --- PUNTO 4: NOTIFICA CAMBIO ASSEGNAZIONE ---
+                if (!newAssignee.getId().equals(oldAssigneeId) && !newAssignee.getId().equals(currentUser.getId())) {
+                    notificationService.notifyUser(newAssignee,
+                            "Assegnazione Modificata",
+                            "Il ticket #" + issue.getId() + " è stato assegnato a te da " + currentUser.getName());
+                }
             } else {
                 issue.setAssignee(null);
             }
@@ -109,18 +130,15 @@ public class IssueService {
         return issue != null ? issue.getAttachment() : null;
     }
 
-
     @Transactional
     public IssueResponse updateState(Long issueId, IssueState newState) {
         Issue issue = issueRepository.findById(issueId).orElseThrow(() -> new EntityNotFoundException("Issue non trovata"));
-        // ... logica esistente ...
         issue.setState(newState);
         return mapToResponse(issueRepository.save(issue));
     }
 
     @Transactional(readOnly = true)
     public List<IssueResponse> getAllIssues() {
-        // Se hai implementato la search repository usa quella, altrimenti findAll
         return issueRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 

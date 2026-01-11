@@ -14,3 +14,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: smtp.gmail.com # O sandbox.smtp.mailtrap.io
+    port: 587
+    username: ${MAIL_USERNAME:tuamail@gmail.com}
+    password: ${MAIL_PASSWORD:tuapassword}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
