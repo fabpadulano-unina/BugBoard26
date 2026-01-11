@@ -13,6 +13,31 @@
             <textarea pInputTextarea formControlName="description" rows="5"></textarea>
         </div>
 
+        <div class="flex flex-column gap-2 p-3 border-1 border-round surface-border surface-50">
+            <label class="font-bold mb-2">Allegato</label>
+            
+            @if (currentImageUrl()) {
+                <div class="mb-3 flex align-items-center gap-3">
+                    <p-image [src]="currentImageUrl()" alt="Allegato Issue" width="200" [preview]="true" class="shadow-2 border-round"></p-image>
+                    <span class="text-sm text-600">(Immagine attuale)</span>
+                </div>
+            } @else {
+                <div class="mb-3 text-500 font-italic text-sm">Nessuna immagine allegata al momento</div>
+            }
+
+            <label class="text-sm font-semibold text-900">Carica/Sostituisci:</label>
+            <p-fileUpload 
+                mode="basic" 
+                chooseLabel="Scegli File" 
+                chooseIcon="pi pi-upload"
+                accept="image/*" 
+                maxFileSize="2000000" 
+                (onSelect)="onFileSelect($event)"
+                [auto]="false"
+                styleClass="w-full">
+            </p-fileUpload>
+        </div>
+
         <div class="formgrid grid">
             <div class="field col-6">
                 <label class="font-bold block mb-2">Tipo</label>
