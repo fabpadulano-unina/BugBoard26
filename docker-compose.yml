@@ -11,7 +11,16 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # HEALTHCHECK: Verifica che il DB sia pronto prima di far partire il backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bugboard_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bugboard-net
 
+  # 2. PgAdmin
   pgadmin:
       image: dpage/pgadmin4
       container_name: pgadmin_bugboard
@@ -21,30 +30,55 @@ services:
       ports:
         - "5050:80"
       depends_on:
-        - postgres 
+        - postgres
+      networks:
+        - bugboard-net
 
-  # 2. Frontend Angular (sviluppo)
-  frontend:
-    image: node:20-alpine
-    container_name: bugboard-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-# Aggiungi l'installazione globale di @angular/cli prima di avviare
-    command: sh -c "npm install -g @angular/cli@18 && npm install && ng serve --host 0.0.0.0 --poll 2000 --disable-host-check"
+  # 3. Backend (Spring Boot - Production Build)
+  backend:
+    build: ./backend 
+    container_name: bugboard-backend
+    # FIX PRINCIPALE: Mappatura della porta per renderla accessibile da localhost
     ports:
-      - "4200:4200"
+      - "8080:8080"
+    environment:
+      DB_HOST: bugboard-db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
     depends_on:
-      - postgres
-  #backend:
-    #image: bugboard-backend:latest # (o build context)
-   # container_name: bugboard-backend
-   # environment:
-      # Qui "inietti" il valore. "bugboard-db" è il nome del container del database
-   #   - DB_HOST=bugboard-db 
-   #   - POSTGRES_USER=admin
-  #    - POSTGRES_PASSWORD=password123
-  #  depends_on:
-   #   - postgres
+      postgres:
+        condition: service_healthy # Aspetta l'healthcheck del DB
+    networks:
+      - bugboard-net
+
+  # 4. Frontend (Angular + Nginx - Production Build)
+  frontend:
+    build: ./frontend
+    container_name: bugboard-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - bugboard-net
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: bugboard-sonar
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+    networks:
+      - bugboard-net
+
 volumes:
   postgres_data:
+  sonar_data:
+
+networks:
+  bugboard-net:

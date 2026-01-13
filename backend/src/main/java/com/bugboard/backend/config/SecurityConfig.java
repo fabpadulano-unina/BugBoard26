@@ -44,7 +44,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Permetti Frontend
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200", // Angular dev server
+                "http://localhost",      // Docker Nginx (porta 80 standard)
+                "http://localhost:80"    // Docker Nginx (esplicito)
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
