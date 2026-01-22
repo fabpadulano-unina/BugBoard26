@@ -8,7 +8,6 @@ import com.bugboard.backend.model.Role;
 import com.bugboard.backend.model.User;
 import com.bugboard.backend.notification.NotificationService; // IMPORTANTE
 import com.bugboard.backend.repository.IssueRepository;
-import com.bugboard.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,7 +22,7 @@ import java.util.List;
 public class IssueService {
 
     private final IssueRepository issueRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CurrentUserService currentUserService;
     private final NotificationService notificationService; // INIEZIONE DEL NOTIFICATORE
 
@@ -32,7 +31,7 @@ public class IssueService {
         User reporter = currentUserService.getCurrentUser();
         User assignee = null;
         if (request.getAssigneeId() != null) {
-            assignee = userRepository.findById(request.getAssigneeId())
+            assignee = userService.getUserById(request.getAssigneeId())
                     .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
         }
 
@@ -97,7 +96,7 @@ public class IssueService {
             issue.setDeadline(request.getDeadline());
 
             if (newAssigneeId != null) {
-                User newAssignee = userRepository.findById(newAssigneeId)
+                User newAssignee = userService.getUserById(newAssigneeId)
                         .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
                 issue.setAssignee(newAssignee);
 
