@@ -1,7 +1,8 @@
-package com.bugboard.backend.notification;
+package com.bugboard.backend.service;
 
 import com.bugboard.backend.model.Notification;
 import com.bugboard.backend.model.User;
+import com.bugboard.backend.adapters.notification.NotificationAdapter;
 import com.bugboard.backend.repository.NotificationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

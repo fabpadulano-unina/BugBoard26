@@ -1,4 +1,4 @@
-package com.bugboard.backend.notification;
+package com.bugboard.backend.adapters.notification;
 
 import com.bugboard.backend.model.Notification;
 import com.bugboard.backend.model.User;

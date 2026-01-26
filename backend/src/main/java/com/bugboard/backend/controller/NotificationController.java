@@ -1,7 +1,7 @@
 package com.bugboard.backend.controller;
 
 import com.bugboard.backend.model.Notification;
-import com.bugboard.backend.notification.NotificationService;
+import com.bugboard.backend.service.NotificationService;
 import com.bugboard.backend.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -6,7 +6,6 @@ import com.bugboard.backend.model.Issue;
 import com.bugboard.backend.model.IssueState;
 import com.bugboard.backend.model.Role;
 import com.bugboard.backend.model.User;
-import com.bugboard.backend.notification.NotificationService; // IMPORTANTE
 import com.bugboard.backend.repository.IssueRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
