@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder; // Aggiungi questo
+import org.springframework.beans.factory.annotation.Value;
 
 
 
@@ -19,10 +20,12 @@ public class DataInitializer {
 
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.default-password}")
+    private String defaultPassword;
     @Bean
     public CommandLineRunner loadData(UserRepository userRepository) {
         return args -> {
-            String encodedPassword = passwordEncoder.encode("password123");
+            String encodedPassword = passwordEncoder.encode(defaultPassword);
 
             if (userRepository.findByEmail("admin@bugboard.com").isEmpty()) {
                 User admin = User.builder()

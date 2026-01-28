@@ -2,17 +2,19 @@ package com.bugboard.backend.service;
 
 import com.bugboard.backend.dto.issue.IssueRequest;
 import com.bugboard.backend.dto.issue.IssueResponse;
+import com.bugboard.backend.exception.FileStorageException;
+import com.bugboard.backend.exception.ResourceNotFoundException;
 import com.bugboard.backend.model.Issue;
 import com.bugboard.backend.model.IssueState;
 import com.bugboard.backend.model.Role;
 import com.bugboard.backend.model.User;
 import com.bugboard.backend.repository.IssueRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -20,10 +22,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IssueService {
 
+    public static final String ISSUE_NON_TROVATA_CON_ID = "ISSUE_NON_TROVATA_CON_ID";
     private final IssueRepository issueRepository;
     private final UserService userService;
     private final CurrentUserService currentUserService;
-    private final NotificationService notificationService; // INIEZIONE DEL NOTIFICATORE
+    private final NotificationService notificationService;
 
     @Transactional
     public IssueResponse createIssue(IssueRequest request, MultipartFile file) {
@@ -31,7 +34,7 @@ public class IssueService {
         User assignee = null;
         if (request.getAssigneeId() != null) {
             assignee = userService.getUserById(request.getAssigneeId())
-                    .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Assegnatario non trovato con ID: " + request.getAssigneeId()));
         }
 
         byte[] attachmentBytes = null;
@@ -41,7 +44,7 @@ public class IssueService {
                 attachmentBytes = file.getBytes();
                 attachmentName = file.getOriginalFilename();
             } catch (IOException e) {
-                throw new RuntimeException("Errore file", e);
+                throw new FileStorageException("Impossibile caricare il file allegato", e);
             }
         }
 
@@ -73,64 +76,81 @@ public class IssueService {
     @Transactional
     public IssueResponse updateIssueDetails(Long id, IssueRequest request, MultipartFile file) {
         Issue issue = issueRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Issue non trovata"));
+                .orElseThrow(() -> new ResourceNotFoundException(ISSUE_NON_TROVATA_CON_ID + id));
 
         User currentUser = currentUserService.getCurrentUser();
-        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
-        boolean isAssignee = issue.getAssignee() != null && issue.getAssignee().getId().equals(currentUser.getId());
 
-        if (!isAdmin && !isAssignee) {
-            throw new AccessDeniedException("Non hai i permessi per modificare questa issue.");
-        }
-
-        Long oldAssigneeId = issue.getAssignee() != null ? issue.getAssignee().getId() : null;
-        Long newAssigneeId = request.getAssigneeId();
+        validateUpdatePermissions(issue, currentUser);
 
         issue.setTitle(request.getTitle());
         issue.setDescription(request.getDescription());
         issue.setType(request.getType());
         issue.setPriority(request.getPriority());
 
-        if (isAdmin) {
+        if (currentUser.getRole() == Role.ADMIN) {
             issue.setDeadline(request.getDeadline());
-
-            if (newAssigneeId != null) {
-                User newAssignee = userService.getUserById(newAssigneeId)
-                        .orElseThrow(() -> new EntityNotFoundException("Assegnatario non trovato"));
-                issue.setAssignee(newAssignee);
-
-                // --- PUNTO 4: NOTIFICA CAMBIO ASSEGNAZIONE ---
-                if (!newAssignee.getId().equals(oldAssigneeId) && !newAssignee.getId().equals(currentUser.getId())) {
-                    notificationService.notifyUser(newAssignee,
-                            "Assegnazione Modificata",
-                            "Il ticket #" + issue.getId() + " è stato assegnato a te da " + currentUser.getName());
-                }
-            } else {
-                issue.setAssignee(null);
-            }
+            handleAssignmentChange(issue, request.getAssigneeId(), currentUser);
         }
 
-        if (file != null && !file.isEmpty()) {
-            try {
-                issue.setAttachment(file.getBytes());
-                issue.setAttachmentName(file.getOriginalFilename());
-            } catch (IOException e) {
-                throw new RuntimeException("Errore aggiornamento file", e);
-            }
-        }
+        updateAttachment(issue, file);
 
         return mapToResponse(issueRepository.save(issue));
     }
 
+
+    private void validateUpdatePermissions(Issue issue, User currentUser) {
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isAssignee = issue.getAssignee() != null && issue.getAssignee().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !isAssignee) {
+            throw new AccessDeniedException("Non hai i permessi per modificare questa issue.");
+        }
+    }
+
+    private void handleAssignmentChange(Issue issue, Long newAssigneeId, User currentUser) {
+        if (newAssigneeId == null) {
+            issue.setAssignee(null);
+            return;
+        }
+
+        Long oldAssigneeId = issue.getAssignee() != null ? issue.getAssignee().getId() : null;
+
+        User newAssignee = userService.getUserById(newAssigneeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assegnatario non trovato con ID: " + newAssigneeId));
+
+        issue.setAssignee(newAssignee);
+
+        if (!newAssignee.getId().equals(oldAssigneeId) && !newAssignee.getId().equals(currentUser.getId())) {
+            notificationService.notifyUser(newAssignee,
+                    "Assegnazione Modificata",
+                    "Il ticket #" + issue.getId() + " è stato assegnato a te da " + currentUser.getName());
+        }
+    }
+
+    private void updateAttachment(Issue issue, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return;
+        }
+        try {
+            issue.setAttachment(file.getBytes());
+            issue.setAttachmentName(file.getOriginalFilename());
+        } catch (IOException e) {
+            throw new FileStorageException("Errore durante l'aggiornamento del file", e);
+        }
+    }
     @Transactional(readOnly = true)
     public byte[] getAttachment(Long id) {
-        Issue issue = issueRepository.findById(id).orElse(null);
-        return issue != null ? issue.getAttachment() : null;
+        Issue issue = issueRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Issue non trovata per il download allegato"));
+
+        return issue.getAttachment();
     }
 
     @Transactional
     public IssueResponse updateState(Long issueId, IssueState newState) {
-        Issue issue = issueRepository.findById(issueId).orElseThrow(() -> new EntityNotFoundException("Issue non trovata"));
+        Issue issue = issueRepository.findById(issueId)
+                .orElseThrow(() -> new ResourceNotFoundException(ISSUE_NON_TROVATA_CON_ID + issueId));
+
         issue.setState(newState);
         return mapToResponse(issueRepository.save(issue));
     }
@@ -142,7 +162,8 @@ public class IssueService {
 
     @Transactional(readOnly = true)
     public IssueResponse getIssueById(Long id) {
-        return mapToResponse(issueRepository.findById(id).orElseThrow());
+        return mapToResponse(issueRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ISSUE_NON_TROVATA_CON_ID + id)));
     }
 
     private IssueResponse mapToResponse(Issue issue) {
