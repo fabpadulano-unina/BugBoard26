@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ import { UserSummary } from '../../../../core/models/user.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FileSelectEvent } from 'primeng/fileupload'; 
 import { FileUploadModule } from 'primeng/fileupload'; 
+import { AuthService } from '../../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-issue-create',
@@ -41,7 +42,9 @@ private fb = inject(FormBuilder);
   private issueService = inject(IssueService);
   private userService = inject(UserService); 
   private router = inject(Router);
+  private authService = inject(AuthService); 
 
+  isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
 

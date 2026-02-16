@@ -48,7 +48,8 @@
                 <p-dropdown id="priority" [options]="priorities" formControlName="priority" styleClass="w-full"></p-dropdown>
             </div>
 
-            <div class="field col-12 md:col-6">
+             @if (isAdmin()) {
+                   <div class="field col-12 md:col-6">
                 <label for="assignee" class="font-bold block mb-2">Assegnatario</label>
                 <p-dropdown 
                     id="assignee" 
@@ -58,9 +59,12 @@
                     optionValue="id" 
                     placeholder="Seleziona un utente"
                     [showClear]="true"
-                    styleClass="w-full">
-                </p-dropdown>
+                    styleClass="w-full"
+                    [disabled]="!isAdmin()"> </p-dropdown>
+               
             </div>
+            }
+           
 
             <div class="field col-12 md:col-6">
                 <label for="deadline" class="font-bold block mb-2">Scadenza</label>

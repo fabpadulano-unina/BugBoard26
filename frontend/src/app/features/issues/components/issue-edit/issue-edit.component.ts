@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -39,6 +39,7 @@ export class IssueEditComponent implements OnInit, OnDestroy {
   issueId = signal<number | null>(null);
   isLoading = signal(false);
   users = signal<any[]>([]); 
+  isAdmin = computed(() => this.auth.currentUser()?.role === 'ADMIN');
   
   currentImageUrl = signal<string | undefined>(undefined);
   selectedFile: File | undefined;

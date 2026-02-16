@@ -47,11 +47,24 @@
                 <label class="font-bold block mb-2">Priorità</label>
                 <p-dropdown [options]="priorities" formControlName="priority" styleClass="w-full"></p-dropdown>
             </div>
-            
-            <div class="field col-6">
+
+             @if (isAdmin()) {
+                   <div class="field col-6">
                 <label class="font-bold block mb-2">Assegnatario</label>
-                <p-dropdown [options]="users()" formControlName="assigneeId" optionLabel="name" optionValue="id" [showClear]="true" styleClass="w-full" placeholder="Nessuno"></p-dropdown>
+                <p-dropdown 
+                    [options]="users()" 
+                    formControlName="assigneeId" 
+                    optionLabel="name" 
+                    optionValue="id" 
+                    [showClear]="true" 
+                    styleClass="w-full" 
+                    placeholder="Nessuno"
+                    [disabled]="!isAdmin()"> </p-dropdown>
+               
             </div>
+            }
+            
+           
             <div class="field col-6">
                 <label class="font-bold block mb-2">Scadenza</label>
                 <p-calendar formControlName="deadline" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" inputStyleClass="w-full"></p-calendar>

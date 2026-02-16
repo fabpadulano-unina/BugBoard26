@@ -61,6 +61,6 @@ export class IssueListComponent {
   canEdit(issue: Issue): boolean {
       const user = this.auth.currentUser();
       if (!user) return false;
-      return user.role === 'ADMIN' || issue.assigneeId === user.id;
+      return user.role === 'ADMIN' || issue.assigneeId === user.id || issue.reporterId === user.id;
   }
 }
