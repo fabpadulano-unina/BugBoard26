@@ -64,18 +64,6 @@ services:
     networks:
       - bugboard-net
 
-  sonarqube:
-    image: sonarqube:community
-    container_name: bugboard-sonar
-    ports:
-      - "9000:9000"
-    environment:
-      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
-    volumes:
-      - sonar_data:/opt/sonarqube/data
-    networks:
-      - bugboard-net
-
 volumes:
   postgres_data:
   sonar_data:
